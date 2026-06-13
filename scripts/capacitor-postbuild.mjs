@@ -3,8 +3,9 @@
 // Cloudflare) inside the Android WebView. This is the standard approach for
 // wrapping an SSR TanStack Start app as a Capacitor APK.
 //
-// Configure the target URL with CAPACITOR_REMOTE_URL (falls back to the
-// stable Lovable production URL for this project).
+// Configure the target URL with CAPACITOR_REMOTE_URL. For debug APKs we fall
+// back to the stable preview/dev URL so the packaged app works even before the
+// site has been published.
 
 import { writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
@@ -12,7 +13,7 @@ import { join } from "node:path";
 const PROJECT_ID = "decc67c2-b397-453a-98ef-1296404f6cba";
 const remoteUrl =
   process.env.CAPACITOR_REMOTE_URL ||
-  `https://project--${PROJECT_ID}.lovable.app`;
+  `https://project--${PROJECT_ID}-dev.lovable.app`;
 
 const outDir = join(process.cwd(), "dist", "client");
 if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
