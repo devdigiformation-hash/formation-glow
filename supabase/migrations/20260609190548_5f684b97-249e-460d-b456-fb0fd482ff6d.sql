@@ -1,0 +1,10 @@
+
+ALTER TABLE public.generated_creatives
+  ADD COLUMN IF NOT EXISTS title TEXT,
+  ADD COLUMN IF NOT EXISTS caption TEXT,
+  ADD COLUMN IF NOT EXISTS description TEXT,
+  ADD COLUMN IF NOT EXISTS hashtags TEXT[] NOT NULL DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS mode TEXT NOT NULL DEFAULT 'quick';
+
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS social_links JSONB NOT NULL DEFAULT '{}'::jsonb;

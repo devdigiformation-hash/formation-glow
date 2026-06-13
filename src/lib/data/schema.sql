@@ -1,0 +1,135 @@
+-- =============================================================================
+-- DigiFormation Affiliate Hub — Supabase schema blueprint (NOT YET APPLIED)
+-- -----------------------------------------------------------------------------
+-- This file is the authoritative reference for the future Supabase migration.
+-- It mirrors the TypeScript types in `src/lib/data/types.ts` 1:1. When Lovable
+-- Cloud is enabled, copy these statements into a migration and update each
+-- hook in `src/lib/data/hooks.ts` to query Supabase instead of localStorage.
+--
+-- Conventions:
+--   * uuid primary keys, default `gen_random_uuid()`
+--   * `created_at` / `updated_at` `timestamptz default now()`
+--   * Public schema; RLS enabled with policies scoped to `auth.uid()`
+--   * Roles separated into a dedicated `user_roles` table (admin/partner)
+-- =============================================================================
+
+-- ---- enums ------------------------------------------------------------------
+-- create type partner_status as enum ('active', 'pending', 'suspended');
+-- create type lead_status as enum ('new', 'contacted', 'converted', 'rejected');
+-- create type commission_status as enum ('pending', 'approved', 'paid', 'rejected');
+-- create type payout_method as enum ('manual_bank_transfer', 'paypal', 'wise');
+-- create type ai_provider as enum ('puter', 'gemini', 'huggingface', 'replicate');
+-- create type app_role as enum ('admin', 'partner');
+
+-- ---- partners ---------------------------------------------------------------
+-- create table public.partners (
+--   id uuid primary key default gen_random_uuid(),
+--   user_id uuid references auth.users(id) on delete cascade unique,
+--   full_name text not null,
+--   brand_name text not null,
+--   logo_url text,
+--   whatsapp text not null,
+--   email text not null,
+--   website text,
+--   primary_color text not null default '#22d3ee',
+--   secondary_color text not null default '#a78bfa',
+--   status partner_status not null default 'active',
+--   created_at timestamptz not null default now(),
+--   updated_at timestamptz not null default now()
+-- );
+
+-- ---- services ---------------------------------------------------------------
+-- create table public.services (
+--   id uuid primary key default gen_random_uuid(),
+--   name text not null,
+--   category text not null,
+--   description text not null default '',
+--   commission_amount_gbp numeric(10,2) not null default 20.00,
+--   is_active boolean not null default true,
+--   created_at timestamptz not null default now()
+-- );
+
+-- ---- manual_leads -----------------------------------------------------------
+-- create table public.manual_leads (
+--   id uuid primary key default gen_random_uuid(),
+--   partner_id uuid references public.partners(id) on delete cascade not null,
+--   client_name text not null,
+--   client_whatsapp text,
+--   client_email text,
+--   service_id uuid references public.services(id) on delete set null,
+--   service_name_snapshot text not null,
+--   quoted_price_gbp numeric(10,2),
+--   notes text not null default '',
+--   status lead_status not null default 'new',
+--   estimated_commission_gbp numeric(10,2) not null default 20.00,
+--   created_at timestamptz not null default now(),
+--   updated_at timestamptz not null default now()
+-- );
+
+-- ---- commissions ------------------------------------------------------------
+-- create table public.commissions (
+--   id uuid primary key default gen_random_uuid(),
+--   partner_id uuid references public.partners(id) on delete cascade not null,
+--   lead_id uuid references public.manual_leads(id) on delete set null,
+--   service_id uuid references public.services(id) on delete set null,
+--   amount_gbp numeric(10,2) not null,
+--   status commission_status not null default 'pending',
+--   payout_method payout_method,
+--   paid_at timestamptz,
+--   created_at timestamptz not null default now()
+-- );
+
+-- ---- admin_creatives --------------------------------------------------------
+-- create table public.admin_creatives (
+--   id uuid primary key default gen_random_uuid(),
+--   title text not null,
+--   category text not null,
+--   service_name text not null,
+--   image_url text,                              -- Supabase Storage URL
+--   description text not null default '',
+--   tags text[] not null default '{}',
+--   is_archived boolean not null default false,
+--   created_at timestamptz not null default now()
+-- );
+
+-- ---- generated_creatives ----------------------------------------------------
+-- create table public.generated_creatives (
+--   id uuid primary key default gen_random_uuid(),
+--   partner_id uuid references public.partners(id) on delete cascade not null,
+--   source_creative_id uuid references public.admin_creatives(id) on delete set null,
+--   output_image_url text not null,
+--   platform text not null default 'generic',
+--   size text not null default '1080x1080',
+--   created_at timestamptz not null default now()
+-- );
+
+-- ---- ai_usage ---------------------------------------------------------------
+-- create table public.ai_usage (
+--   id uuid primary key default gen_random_uuid(),
+--   partner_id uuid references public.partners(id) on delete cascade not null,
+--   provider ai_provider not null,
+--   model text not null,
+--   success boolean not null,
+--   error_message text,
+--   created_at timestamptz not null default now()
+-- );
+
+-- ---- downloads --------------------------------------------------------------
+-- create table public.downloads (
+--   id uuid primary key default gen_random_uuid(),
+--   partner_id uuid references public.partners(id) on delete cascade not null,
+--   creative_id uuid references public.generated_creatives(id) on delete set null,
+--   file_type text not null,
+--   downloaded_at timestamptz not null default now()
+-- );
+
+-- ---- grants & RLS (canonical pattern) ---------------------------------------
+-- grant select, insert, update, delete on public.partners to authenticated;
+-- grant all on public.partners to service_role;
+-- alter table public.partners enable row level security;
+-- create policy "Partners read own"   on public.partners for select using (auth.uid() = user_id);
+-- create policy "Partners update own" on public.partners for update using (auth.uid() = user_id);
+-- -- Repeat the partner_id = (select id from partners where user_id = auth.uid())
+-- -- pattern for manual_leads, commissions, generated_creatives, ai_usage, downloads.
+-- -- services + admin_creatives: select to authenticated; mutations restricted via
+-- -- has_role(auth.uid(), 'admin') security-definer function.
