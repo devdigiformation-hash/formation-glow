@@ -44,6 +44,14 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
 
+      - name: Generate Capacitor index.html shell
+        run: bun run cap:postbuild
+        env:
+          CAPACITOR_REMOTE_URL: ${{ secrets.CAPACITOR_REMOTE_URL }}
+
+      - name: Verify web assets contain index.html
+        run: test -f dist/client/index.html && echo "index.html present"
+
       - name: Capacitor sync Android
         run: bunx cap sync android
 
