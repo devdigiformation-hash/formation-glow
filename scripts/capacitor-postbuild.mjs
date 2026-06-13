@@ -4,8 +4,8 @@
 // app as a Capacitor APK.
 //
 // Configure the target URL with the CAPACITOR_REMOTE_URL secret in GitHub.
-// Fallback below uses the stable preview host so the debug APK works even
-// before the site has been published.
+// Fallback below uses the published Lovable host so the debug APK works
+// after the site has been published.
 
 import { writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
@@ -13,7 +13,7 @@ import { join } from "node:path";
 const PROJECT_ID = "decc67c2-b397-453a-98ef-1296404f6cba";
 const remoteUrl =
   process.env.CAPACITOR_REMOTE_URL ||
-  `https://id-preview--${PROJECT_ID}.lovable.app`;
+  `https://project--${PROJECT_ID}.lovable.app`;
 
 const outDir = join(process.cwd(), "dist", "client");
 if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
