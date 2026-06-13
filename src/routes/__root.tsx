@@ -165,10 +165,7 @@ function RouteGuard({ children }: { children: ReactNode }) {
     );
   }
 
-  if (!user && !onPublic) {
-    return <Navigate to="/auth/login" search={{ redirect: pathname }} replace />;
-  }
-
+  // TEMP: auth disabled for mobile app testing
   if (user && onPublic) {
     return <Navigate to="/" replace />;
   }
