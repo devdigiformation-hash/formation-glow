@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Earn with DG</string>
+    <string name="title_activity_main">Earn with DG</string>
+    <string name="package_name">com.earnwithdg.app</string>
+    <string name="custom_url_scheme">com.earnwithdg.app</string>
+</resources>
