@@ -116,9 +116,26 @@ export function usePartnerProfile() {
   );
 
   const save = useCallback((patch: Partial<Partner>) => {
-    if (!profile) return null;
-    return partnersCollection.update(profile.id, patch);
-  }, [profile]);
+    if (profile) {
+      return partnersCollection.update(profile.id, patch);
+    }
+    // No profile row yet (trigger didn't fire, or first save) — insert one
+    // keyed by the authenticated user's id so RLS (auth.uid() = id) passes.
+    return partnersCollection.insert({
+      id: partnerId,
+      full_name: "",
+      brand_name: "",
+      logo_url: null,
+      whatsapp: "",
+      email: "",
+      website: null,
+      primary_color: "#22d3ee",
+      secondary_color: "#a78bfa",
+      status: "active",
+      social_links: {},
+      ...patch,
+    } as unknown as Omit<Partner, "created_at" | "updated_at">);
+  }, [profile, partnerId]);
 
   return { profile, save, partnerId: profile?.id ?? partnerId };
 }
