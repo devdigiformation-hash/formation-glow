@@ -1,0 +1,19 @@
+{
+  "name": "Earn with DG",
+  "short_name": "Earn DG",
+  "description": "Earn with DG — DigiFormation partner app.",
+  "theme_color": "#22d3ee",
+  "background_color": "#0b0f17",
+  "display": "standalone",
+  "orientation": "portrait",
+  "start_url": "/",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/app-icon.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
