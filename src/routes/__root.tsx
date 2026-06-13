@@ -80,7 +80,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { name: "theme-color", content: "#0f1530" },
+      { name: "theme-color", content: "#22d3ee" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "Earn with DG" },
       { title: "DigiFormation Affiliate Hub" },
       { name: "description", content: "Premium affiliate dashboard for DigiFormation partners — creatives, AI tools, and earnings in one place." },
       { property: "og:title", content: "DigiFormation Affiliate Hub" },
